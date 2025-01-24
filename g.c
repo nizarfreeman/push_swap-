@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 void	skip_spaces(const char **s);
 void	sign_check(const char	**s, int *flag, int *double_sign);
-int	ll_check(unsigned long long res, int flag);
-int	ft_atoi(const char *s);
+int	ll_check(unsigned long long res, int flag, int *flag_2);
+int	ft_atoi(const char *s, int *flag_2);
 void	*ft_calloc(size_t count, size_t size);
 void	*ft_memset(void *s, int c, size_t n);
 int	count_words(const char *s, char c);
@@ -13,6 +14,7 @@ int	get_len(const char *s, char c);
 void	free_array(char **arr);
 void	skip_delim(const char	**s, char c);
 char	**ft_split(const char *s, char c);
+int	ft_isdigit(int c);
 
 typedef struct   a
 {
@@ -52,58 +54,171 @@ void	ss_(int *a, int *b)
 	sb_(b);
 }
 
-int	scan_flet(char *s)
+void	pa_(stack_a *a, stack_b *b)
 {
-	while (s)
+	if (b->top == -1 || a->top + 1 >= a->size)
+		return ;
+	a->arr[++(a->top)] = b->arr[(b->top)--];
+}
+
+void	pb_(stack_a *a, stack_b *b)
+{
+	if (a->top == -1 || b->top + 1 >= b->size)
+		return ;
+	b->arr[++(b->top)] = a->arr[(a->top)--];
+}
+
+void	ra_(stack_a *a)
+{
+	int	tmp;
+	int	i;
+
+	if (a->top < 1)
+		return ;
+	tmp = a->arr[0];
+	i = 0;
+	while (i < a->top)
 	{
-		if (!((*s >= '0' && *s <= '9') || *s == ' ' || 
-			*s == '\"' || *s == '-' || *s == '+'))
-			return (0);
-		s++:
+		a->arr[i] = a->arr[i + 1];
+		i++;
+	}
+	a->arr[a->top] = tmp;
+}
+
+void	rb_(stack_b *b)
+{
+	int	tmp;
+	int	i;
+
+	if (b->top < 1)
+		return ;
+	tmp = b->arr[0];
+	i = 0;
+	while (i < b->top)
+	{
+		b->arr[i] = b->arr[i + 1];
+		i++;
+	}
+	b->arr[b->top] = tmp;
+}
+
+void	rr_(stack_a *a, stack_b *b)
+{
+	ra_(a);
+	rb_(b);
+}
+
+void	rra_(stack_a *a)
+{
+	int	tmp;
+	int	i;
+
+	if (a->top < 1)
+		return ;
+	tmp = a->arr[a->top];
+	i = a->top;
+	while (i > 0)
+	{
+		a->arr[i] = a->arr[i - 1];
+		i--;
+	}
+	a->arr[0] = tmp;
+}
+
+void	rrb_(stack_b *b)
+{
+	int	tmp;
+	int	i;
+
+	if (b->top < 1)
+		return ;
+	tmp = b->arr[b->top];
+	i = b->top;
+	while (i > 0)
+	{
+		b->arr[i] = b->arr[i - 1];
+		i--;
+	}
+	b->arr[0] = tmp;
+}
+
+void	rrr_(stack_a *a, stack_b *b)
+{
+	rra_(a);
+	rrb_(b);
+}
+
+int	dup_check(int *arr, int index)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	while (i <= index)
+	{
+		j = i + 1;
+		while (j <= index)
+		{
+			if (arr[i] == arr[j])
+				return (0);
+			j++;
+		}
+		i++;
 	}
 	return (1);
 }
-int	search_dq(char *s)
-{
-	int	flag;
 
-	flag = 0;
-	s++;
-	while (s)
+int	check_valid(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
 	{
-		if (*s != ' ' && *s != '\"')
-			flag = 1;
-		if (*s == '\"' && flag)
+		if (s[i] == ' ')
+		{
+			i++;
+			continue ;
+		}
+		if ((s[i] == '-' || s[i] == '+') && !ft_isdigit(s[i + 1]))
+			return (0);
+		if (s[i] != '-' && s[i] != '+' && !ft_isdigit(s[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int	check_if_empty(char *s)
+{
+	while (*s)
+	{
+		if (*s != ' ')
 			return (1);
 		s++;
 	}
 	return (0);
 }
 
-int	parse_quoted(char *str, int *y, stack_a **a, int *count)
-{
-}
-
-int	parse_number(char *str, int *y, stack_a **a, int *count)
-{
-}
-
-int	parse(stack_a **a, int ac, char **av)
-{
-}
-
 int	count_string_nums(char *str)
 {
-}
+	char	**arr;
+	int	ret;
+	int	i;
 
-int	check_valid(char *s)
-{
-	if (*s == '\"' && (!search_dq(s)))
+	arr = ft_split(str, ' ');
+	if (!arr)
 		return (0);
-
-
-
-
+	ret = 0;
+	i = 0;
+	while (arr[i])
+	{
+		ret++;
+		i++;
+	}
+	i = 0;
+	free_array(arr);	
+	return (ret);
 }
 
 int	count_elements(int ac, char **av)
@@ -115,7 +230,7 @@ int	count_elements(int ac, char **av)
 	total = 0;
 	while (i < ac)
 	{
-		if (!check_valid(av[i])
+		if (!check_valid(av[i]) || !check_if_empty(av[i]))
 			return (0);
 		total += count_string_nums(av[i]);
 		i++;
@@ -123,12 +238,50 @@ int	count_elements(int ac, char **av)
 	return (total);
 }
 
+int	push_(stack_a **a, char **arr)
+{
+	int	i;
+	int	flag;
+
+	flag = 1;
+	i = 0;
+	while (arr[i])
+	{
+		(*a)->arr[++((*a)->top)] = ft_atoi(arr[i], &flag);
+		if (!flag)
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int	fill_stack(stack_a **a, int ac, char **av)
+{
+	char	**arr;
+	int	i;
+	int	y;
+
+	i = 1;
+	while (i < ac)
+	{
+		arr = ft_split(av[i], ' ');
+		if (!arr)
+			return (0);
+		if (!push_(a, arr))
+			return (0);
+		y = 0;
+		free_array(arr);
+		i++;
+	}
+	return (1);
+}
+
 int	set_a(stack_a **a, int ac, char **av)
 {
 	int	count;
 
 	count = count_elements(ac, av);
-	if (!count)
+	if (!count || ac == 1)
 		return (0);
 	*a = malloc(sizeof(stack_a));
 	if (!*a)
@@ -141,7 +294,7 @@ int	set_a(stack_a **a, int ac, char **av)
 	}
 	(*a)->top = -1;
 	(*a)->size = count;
-	if (!parse(a, ac, av))
+	if (!fill_stack(a, ac, av) || !dup_check((*a)->arr, (*a)->top))
 	{
 		free((*a)->arr);
 		free(*a);
@@ -155,10 +308,17 @@ int main(int ac, char **av)
 	stack_a	*a;
 	stack_b	*b;
 
-	if (!set_a(&a, ac, av))
+	if (ac < 2)
 		return (0);
-	for (int i = 0; i < a->size; i++)
+	if (!set_a(&a, ac, av))
+	{
+		write(1, "Error\n", 6);
+		return (0);
+	}
+	for (int i = 0; i < a -> size; i++)
 		printf("%d ", a->arr[i]);
+	free(a->arr);
+	free(a);
 	printf("\n");
 }
 
@@ -204,19 +364,28 @@ void	sign_check(const char **s, int *flag, int *double_sign)
 	}
 }
 
-int	ll_check(unsigned long long res, int flag)
+int	ll_check(unsigned long long res, int flag, int *flag_2)
 {
-	if (res > LONG_MAX)
+	if (res > INT_MAX)
 	{
+		if (flag == 1 && res == 2147483648ULL)
+			return (-2147483648);
 		if (flag == 1)
+		{
+			*flag_2 = 0;
 			return (0);
+		
+		}
 		else
+		{
+			*flag_2 = 0;
 			return (-1);
+		}
 	}
 	return (1);
 }
 
-int	ft_atoi(const char *s)
+int	ft_atoi(const char *s, int *flag_2)
 {
 	unsigned long long	res;
 	int					flag;
@@ -234,7 +403,7 @@ int	ft_atoi(const char *s)
 	while (*s >= '0' && *s <= '9')
 	{
 		res = res * 10 + (*s - '0');
-		check = ll_check(res, flag);
+		check = ll_check(res, flag, flag_2);
 		if (check != 1)
 			return (check);
 		s++;
@@ -244,6 +413,11 @@ int	ft_atoi(const char *s)
 	return ((int)res);
 }
 
+
+int	ft_isdigit(int c)
+{
+	return (c >= '0' && c <= '9');
+}
 
 int	count_words(const char *s, char c)
 {
