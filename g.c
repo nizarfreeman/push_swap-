@@ -21,14 +21,14 @@ typedef struct   a
 	int	*arr;
 	int	size;
 	int	top;
-} stack_a;
+} t_stack_a;
 
 typedef struct  b
 {
 	int	*arr;
 	int	size;
 	int	top;
-} stack_b;
+} t_stack_b;
 
 void	sa_(int *arr)
 {
@@ -54,21 +54,21 @@ void	ss_(int *a, int *b)
 	sb_(b);
 }
 
-void	pa_(stack_a *a, stack_b *b)
+void	pa_(t_stack_a *a, t_stack_b *b)
 {
 	if (b->top == -1 || a->top + 1 >= a->size)
 		return ;
 	a->arr[++(a->top)] = b->arr[(b->top)--];
 }
 
-void	pb_(stack_a *a, stack_b *b)
+void	pb_(t_stack_a *a, t_stack_b *b)
 {
 	if (a->top == -1 || b->top + 1 >= b->size)
 		return ;
 	b->arr[++(b->top)] = a->arr[(a->top)--];
 }
 
-void	ra_(stack_a *a)
+void	ra_(t_stack_a *a)
 {
 	int	tmp;
 	int	i;
@@ -85,7 +85,7 @@ void	ra_(stack_a *a)
 	a->arr[a->top] = tmp;
 }
 
-void	rb_(stack_b *b)
+void	rb_(t_stack_b *b)
 {
 	int	tmp;
 	int	i;
@@ -102,13 +102,13 @@ void	rb_(stack_b *b)
 	b->arr[b->top] = tmp;
 }
 
-void	rr_(stack_a *a, stack_b *b)
+void	rr_(t_stack_a *a, t_stack_b *b)
 {
 	ra_(a);
 	rb_(b);
 }
 
-void	rra_(stack_a *a)
+void	rra_(t_stack_a *a)
 {
 	int	tmp;
 	int	i;
@@ -125,7 +125,7 @@ void	rra_(stack_a *a)
 	a->arr[0] = tmp;
 }
 
-void	rrb_(stack_b *b)
+void	rrb_(t_stack_b *b)
 {
 	int	tmp;
 	int	i;
@@ -142,7 +142,7 @@ void	rrb_(stack_b *b)
 	b->arr[0] = tmp;
 }
 
-void	rrr_(stack_a *a, stack_b *b)
+void	rrr_(t_stack_a *a, t_stack_b *b)
 {
 	rra_(a);
 	rrb_(b);
@@ -238,7 +238,7 @@ int	count_elements(int ac, char **av)
 	return (total);
 }
 
-int	push_(stack_a **a, char **arr)
+int	push_(t_stack_a **a, char **arr)
 {
 	int	i;
 	int	flag;
@@ -255,7 +255,7 @@ int	push_(stack_a **a, char **arr)
 	return (1);
 }
 
-int	fill_stack(stack_a **a, int ac, char **av)
+int	fill_stack(t_stack_a **a, int ac, char **av)
 {
 	char	**arr;
 	int	i;
@@ -276,14 +276,14 @@ int	fill_stack(stack_a **a, int ac, char **av)
 	return (1);
 }
 
-int	set_a(stack_a **a, int ac, char **av)
+int	set_a(t_stack_a **a, int ac, char **av)
 {
 	int	count;
 
 	count = count_elements(ac, av);
 	if (!count || ac == 1)
 		return (0);
-	*a = malloc(sizeof(stack_a));
+	*a = malloc(sizeof(t_stack_a));
 	if (!*a)
 		return (0);
 	(*a)->arr = malloc(count * sizeof(int));
@@ -305,8 +305,8 @@ int	set_a(stack_a **a, int ac, char **av)
 
 int main(int ac, char **av)
 {
-	stack_a	*a;
-	stack_b	*b;
+	t_stack_a	*a;
+	t_stack_b	*b;
 
 	if (ac < 2)
 		return (0);
