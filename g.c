@@ -63,11 +63,18 @@ void	pa_(t_stack_a *a, t_stack_b *b)
 
 void	pb_(t_stack_a *a, t_stack_b *b)
 {
-	if (a->top == -1 || b->top + 1 >= b->size)
+	if (a->top == -1)
 		return ;
 	b->arr[++(b->top)] = a->arr[(a->top)--];
 }
 
+/*void	pb_(t_stack_a *a, t_stack_b *b)
+{
+	if (a->top == -1 || b->top + 1 >= b->size)
+		return ;
+	b->arr[++(b->top)] = a->arr[(a->top)--];
+}
+*/
 void	ra_(t_stack_a *a)
 {
 	int	tmp;
@@ -303,6 +310,131 @@ int	set_a(t_stack_a **a, int ac, char **av)
 	return (1);
 }
 
+void	set_b(t_stack_b **b,int count)
+{
+	*b = malloc(sizeof(t_stack_b));
+	if (!b)
+		return ;	
+	(*b)->arr = malloc(count * sizeof(int));
+	if (!((*b)->arr))
+	{
+		free(*b);
+		return ;
+	}
+	(*b)->top = -1;
+}
+
+void	free_(t_stack_a **a, t_stack_b **b)
+{
+	if (*a)
+	{
+		free((*a)->arr);
+		free(*a);
+		*a = NULL;
+	}
+	if (*b)
+	{
+		free((*b)->arr);
+		free(*b);
+		*b = NULL;
+	}
+}
+
+int	get_max(t_stack_a **a)
+{
+	int	max;
+	int i;
+
+	max = (*a)->arr[0];
+	i = 0;
+	while (i <= (*a)->top)
+	{
+		if (((*a)->arr[i]) > max)
+			max = (*a)->arr[i];
+		i++;
+	}
+	if (max == 0)
+		return (0);
+	i = sizeof(int) * 8 - 1;
+	while (i >= 0)
+	{
+		if ((max >> i) & 1)
+		{
+			return (i + 1);
+			break;
+		}
+		i--;
+	}
+	return (-1);
+}
+
+void    sort_(t_stack_a **a, t_stack_b **b)
+{
+    int max;
+    int size;
+    int i;
+    int j;
+    
+    max = get_max(a);
+    i = 0;
+    while (i < max)
+    {
+        j = 0;
+        size = (*a)->top + 1;
+        while (j < size)
+        {
+            // Check the current bit (i) of the number at top of stack A
+            if (((*a)->arr[(*a)->top] >> i) & 1)
+                ra_(*a);
+            else
+                pb_(*a, *b);
+            j++;
+        }
+        // Push all numbers back to stack A
+        while ((*b)->top != -1)
+            pa_(*a, *b);
+        i++;
+    }
+    
+    // Final step: if the most significant bit is 0, we need to reverse the order
+    i = 0;
+    size = (*a)->top + 1;
+    while (i < size / 2)
+    {
+        int temp = (*a)->arr[i];
+        (*a)->arr[i] = (*a)->arr[size - 1 - i];
+        (*a)->arr[size - 1 - i] = temp;
+        i++;
+    }
+}
+
+/*void	sort_(t_stack_a **a, t_stack_b **b)
+{
+	int	max;
+	int	size;
+	int	rotations;
+	
+	max = get_max(a);
+	for (int i = 0; i < max; i++)
+	{
+		size = (*a)->top + 1;
+		rotations = 0;
+		while ((*a)->top > -1 && rotations < size)
+		{
+			if (!(((*a)->arr[(*a)->top] >> i) & 1))
+				pb_(*a, *b);
+			else
+			{
+				ra_(*a);
+				rotations++;
+			}
+		}
+		while ((*b)->top > -1)
+			pa_(*a, *b);
+	}
+
+}
+*/
 int main(int ac, char **av)
 {
 	t_stack_a	*a;
@@ -315,11 +447,20 @@ int main(int ac, char **av)
 		write(1, "Error\n", 6);
 		return (0);
 	}
-	for (int i = 0; i < a -> size; i++)
+	set_b(&b, a->size);
+	if (!b || !(b->arr))
+	{
+		free_(&a, NULL);
+		return (0);
+	}
+	sort_(&a, &b);
+	for (int i = 0; i <= a->top; i++)
+	{
 		printf("%d ", a->arr[i]);
-	free(a->arr);
-	free(a);
+	}
 	printf("\n");
+	free_(&a, &b);
+	return (0);
 }
 
 void	*ft_memset(void *s, int c, size_t n)
